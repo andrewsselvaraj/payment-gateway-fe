@@ -1,0 +1,33 @@
+<div class="page-head">
+  <h1>Notifications</h1>
+  <button class="btn btn-ghost" type="button" (click)="load()" [disabled]="loading()">Refresh</button>
+</div>
+<p class="muted">Recent customer notifications sent by notification-service after payment events.</p>
+
+@if (error()) {
+  <p class="alert alert-bad">{{ error() }}</p>
+}
+
+<section class="card">
+  @if (loading()) {
+    <p class="empty">Loading…</p>
+  } @else {
+    <ul class="feed">
+      @for (n of items(); track $index) {
+        <li>
+          <div class="feed-head">
+            <span class="badge badge-info">{{ n.type }}</span>
+            <span class="muted">{{ n.receivedAt | date: 'medium' }}</span>
+          </div>
+          <p>{{ n.message }}</p>
+          <p class="muted">
+            To {{ n.recipient }}
+            @if (n.referenceId) { · ref <code>{{ n.referenceId }}</code> }
+          </p>
+        </li>
+      } @empty {
+        <li class="empty">No notifications yet. <a routerLink="/checkout">Make a payment</a> to generate one.</li>
+      }
+    </ul>
+  }
+</section>

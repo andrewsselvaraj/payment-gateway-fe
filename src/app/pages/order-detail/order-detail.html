@@ -1,0 +1,60 @@
+<p><a routerLink="/orders">← Orders</a></p>
+
+@if (error()) {
+  <p class="alert alert-bad">{{ error() }}</p>
+}
+
+@if (order(); as o) {
+  <div class="page-head">
+    <h1>{{ o.item }}</h1>
+    <app-status-badge [status]="o.status" />
+  </div>
+
+  <section class="card">
+    <dl class="details">
+      <dt>Order id</dt><dd><code>{{ o.id }}</code></dd>
+      <dt>Customer</dt><dd>{{ o.customerEmail }}</dd>
+      <dt>Amount</dt><dd>{{ o.amount | currency: o.currency }}</dd>
+      <dt>Created</dt><dd>{{ o.createdAt | date: 'medium' }}</dd>
+      @if (o.paymentFailureReason) {
+        <dt>Failure reason</dt><dd><code>{{ o.paymentFailureReason }}</code></dd>
+      }
+    </dl>
+  </section>
+
+  <section class="card">
+    <h2>Payments</h2>
+    @if (payments().length) {
+      <table>
+        <thead>
+          <tr><th>Card</th><th>Provider</th><th class="num">Amount</th><th>Status</th><th>Updated</th><th></th></tr>
+        </thead>
+        <tbody>
+          @for (p of payments(); track p.id) {
+            <tr>
+              <td>{{ p.maskedCard ?? '—' }}</td>
+              <td>{{ p.provider }}@if (p.providerReference) { <br /><code class="muted">{{ p.providerReference }}</code> }</td>
+              <td class="num">{{ p.amount | currency: p.currency }}</td>
+              <td>
+                <app-status-badge [status]="p.status" />
+                @if (p.failureReason) { <br /><code class="muted">{{ p.failureReason }}</code> }
+              </td>
+              <td>{{ p.updatedAt | date: 'medium' }}</td>
+              <td class="num">
+                @if (p.status === 'CAPTURED') {
+                  <button class="btn btn-ghost btn-sm" type="button" (click)="refund(p)" [disabled]="refunding() === p.id">
+                    {{ refunding() === p.id ? 'Refunding…' : 'Refund' }}
+                  </button>
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    } @else {
+      <p class="empty">No payments recorded for this order.</p>
+    }
+  </section>
+} @else if (!error()) {
+  <p class="empty">Loading order…</p>
+}

@@ -1,0 +1,29 @@
+# Dev: single replica in payments-dev, next to the backend's dev overlay.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+namespace: payments-dev
+resources:
+  - ../../base
+patches:
+  - target: { kind: Deployment }
+    patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 1
+  - target: { kind: HorizontalPodAutoscaler }
+    patch: |-
+      - op: replace
+        path: /spec/minReplicas
+        value: 1
+      - op: replace
+        path: /spec/maxReplicas
+        value: 2
+  - target: { kind: PodDisruptionBudget }
+    patch: |-
+      - op: replace
+        path: /spec/minAvailable
+        value: 0
+images:
+  - name: payment-gateway-fe
+    newName: quay.io/andrewsselvaraj/payment-gateway-fe
+    newTag: latest

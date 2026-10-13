@@ -1,0 +1,43 @@
+<div class="page-head">
+  <h1>Orders</h1>
+  <button class="btn btn-ghost" type="button" (click)="load()" [disabled]="loading()">Refresh</button>
+</div>
+
+<div class="filters">
+  <input type="search" placeholder="Search by id, item or email" [ngModel]="query()" (ngModelChange)="query.set($event)" />
+  <select [ngModel]="status()" (ngModelChange)="status.set($event)">
+    <option value="">All statuses</option>
+    @for (s of statuses; track s) {
+      <option [value]="s">{{ s.replace('_', ' ').toLowerCase() }}</option>
+    }
+  </select>
+</div>
+
+@if (error()) {
+  <p class="alert alert-bad">{{ error() }}</p>
+}
+
+<section class="card">
+  @if (loading()) {
+    <p class="empty">Loading orders…</p>
+  } @else if (filtered().length) {
+    <table>
+      <thead>
+        <tr><th>Item</th><th>Customer</th><th class="num">Amount</th><th>Status</th><th>Created</th></tr>
+      </thead>
+      <tbody>
+        @for (o of filtered(); track o.id) {
+          <tr>
+            <td><a [routerLink]="['/orders', o.id]">{{ o.item }}</a></td>
+            <td>{{ o.customerEmail }}</td>
+            <td class="num">{{ o.amount | currency: o.currency }}</td>
+            <td><app-status-badge [status]="o.status" /></td>
+            <td>{{ o.createdAt | date: 'medium' }}</td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  } @else {
+    <p class="empty">No orders match.</p>
+  }
+</section>

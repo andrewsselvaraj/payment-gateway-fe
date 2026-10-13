@@ -1,0 +1,19 @@
+# Public entry point for the UI. TLS is terminated at the OpenShift router (edge) with the ROSA
+# default ingress certificate; plain HTTP is redirected to HTTPS.
+apiVersion: route.openshift.io/v1
+kind: Route
+metadata:
+  name: payment-gateway-fe
+  labels:
+    app: payment-gateway-fe
+  annotations:
+    haproxy.router.openshift.io/timeout: 30s
+spec:
+  to:
+    kind: Service
+    name: payment-gateway-fe
+  port:
+    targetPort: http
+  tls:
+    termination: edge
+    insecureEdgeTerminationPolicy: Redirect

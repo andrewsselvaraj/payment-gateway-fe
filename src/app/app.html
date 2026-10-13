@@ -1,0 +1,21 @@
+<header class="topbar">
+  <a class="brand" routerLink="/dashboard">
+    <span class="logo" aria-hidden="true">◆</span> Payment Gateway
+  </a>
+  <nav>
+    <a routerLink="/dashboard" routerLinkActive="active">Dashboard</a>
+    <a routerLink="/checkout" routerLinkActive="active">New payment</a>
+    <a routerLink="/orders" routerLinkActive="active">Orders</a>
+    <a routerLink="/notifications" routerLinkActive="active">Notifications</a>
+  </nav>
+  <span class="gateway" [class.up]="gatewayUp() === true" [class.down]="gatewayUp() === false">
+    @switch (gatewayUp()) {
+      @case (true) { Gateway up }
+      @case (false) { Gateway unreachable }
+      @default { Checking gateway… }
+    }
+  </span>
+</header>
+<main class="container">
+  <router-outlet />
+</main>

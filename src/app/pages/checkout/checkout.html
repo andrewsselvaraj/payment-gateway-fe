@@ -1,0 +1,94 @@
+<div class="page-head">
+  <h1>New payment</h1>
+</div>
+
+<div class="split">
+  <form class="card form" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+    <h2>Order</h2>
+    <label>
+      Customer email
+      <input type="email" formControlName="customerEmail" autocomplete="email" placeholder="jane@example.com" />
+      @if (invalid('customerEmail')) { <span class="field-error">Enter a valid email.</span> }
+    </label>
+    <label>
+      Item
+      <input type="text" formControlName="item" placeholder="Annual subscription" />
+      @if (invalid('item')) { <span class="field-error">Item is required.</span> }
+    </label>
+    <div class="row">
+      <label>
+        Amount
+        <input type="number" formControlName="amount" min="0.01" step="0.01" />
+        @if (invalid('amount')) { <span class="field-error">Minimum 0.01.</span> }
+      </label>
+      <label class="narrow">
+        Currency
+        <input type="text" formControlName="currency" maxlength="3" />
+        @if (invalid('currency')) { <span class="field-error">3-letter code.</span> }
+      </label>
+    </div>
+
+    <h2>Card</h2>
+    <div formGroupName="card">
+      <label>
+        Card number
+        <input type="text" formControlName="cardNumber" inputmode="numeric" autocomplete="cc-number" placeholder="4242 4242 4242 4242" />
+        @if (invalid('card.cardNumber')) { <span class="field-error">12 to 19 digits.</span> }
+      </label>
+      <div class="row">
+        <label>
+          Expiry
+          <input type="text" formControlName="expiry" autocomplete="cc-exp" placeholder="MM/YY" />
+          @if (invalid('card.expiry')) { <span class="field-error">Use MM/YY.</span> }
+        </label>
+        <label class="narrow">
+          CVV
+          <input type="password" formControlName="cvv" inputmode="numeric" autocomplete="cc-csc" maxlength="4" />
+          @if (invalid('card.cvv')) { <span class="field-error">3 or 4 digits.</span> }
+        </label>
+      </div>
+    </div>
+
+    <button class="btn" type="submit" [disabled]="submitting()">
+      {{ submitting() ? 'Processing…' : 'Pay ' + (form.controls.amount.value || 0) + ' ' + form.controls.currency.value.toUpperCase() }}
+    </button>
+
+    @if (error()) {
+      <p class="alert alert-bad">{{ error() }}</p>
+    }
+  </form>
+
+  <aside>
+    @if (result(); as order) {
+      <div class="card result" [class.result-ok]="order.status === 'PAID'" [class.result-bad]="order.status === 'PAYMENT_FAILED'">
+        <h2>
+          @switch (order.status) {
+            @case ('PAID') { Payment captured }
+            @case ('PAYMENT_FAILED') { Payment failed }
+            @case ('PAYMENT_PENDING') { Payment pending }
+            @default { Order created }
+          }
+        </h2>
+        <app-status-badge [status]="order.status" />
+        @if (order.paymentFailureReason) {
+          <p>Reason: <code>{{ order.paymentFailureReason }}</code></p>
+        }
+        <p class="muted">Order <code>{{ order.id }}</code></p>
+        <button class="btn btn-ghost" type="button" (click)="viewOrder(order)">View order</button>
+      </div>
+    }
+    <div class="card">
+      <h2>Test cards</h2>
+      <p class="muted">The mock provider in dev decides the outcome from the card number.</p>
+      <ul class="test-cards">
+        @for (card of testCards; track card.number) {
+          <li>
+            <button type="button" class="link" (click)="useTestCard(card.number)">{{ card.number }}</button>
+            <span>{{ card.label }}</span>
+          </li>
+        }
+      </ul>
+      <p class="muted">Card data goes straight to the gateway and is never stored by this app. <a routerLink="/orders">See orders</a></p>
+    </div>
+  </aside>
+</div>
