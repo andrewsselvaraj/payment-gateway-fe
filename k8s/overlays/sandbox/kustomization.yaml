@@ -1,0 +1,47 @@
+# Red Hat OpenShift Developer Sandbox: deploys next to the backend's sandbox overlay in the current
+# project (no namespace is set), so nginx reaches the api-gateway Service by name. The image is built
+# in-cluster (builds.yaml); HPA, PDB and NetworkPolicies are dropped as in the backend overlay.
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+  - ../../base
+  - builds.yaml
+patches:
+  - target: { kind: HorizontalPodAutoscaler }
+    patch: |-
+      $patch: delete
+      apiVersion: autoscaling/v2
+      kind: HorizontalPodAutoscaler
+      metadata:
+        name: all
+  - target: { kind: PodDisruptionBudget }
+    patch: |-
+      $patch: delete
+      apiVersion: policy/v1
+      kind: PodDisruptionBudget
+      metadata:
+        name: all
+  - target: { kind: NetworkPolicy }
+    patch: |-
+      $patch: delete
+      apiVersion: networking.k8s.io/v1
+      kind: NetworkPolicy
+      metadata:
+        name: all
+  - target: { kind: Deployment }
+    patch: |-
+      - op: replace
+        path: /spec/replicas
+        value: 1
+      - op: replace
+        path: /spec/template/spec/containers/0/imagePullPolicy
+        value: Always
+      - op: replace
+        path: /spec/template/spec/containers/0/resources
+        value:
+          requests: { cpu: 20m, memory: 32Mi }
+          limits: { cpu: 200m, memory: 128Mi }
+      - op: add
+        path: /metadata/annotations
+        value:
+          image.openshift.io/triggers: '[{"from":{"kind":"ImageStreamTag","name":"payment-gateway-fe:latest"},"fieldPath":"spec.template.spec.containers[?(@.name==\"payment-gateway-fe\")].image"}]'

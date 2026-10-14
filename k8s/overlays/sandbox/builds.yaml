@@ -1,0 +1,43 @@
+# In-cluster build from GitHub using the repo's Dockerfile (Node build -> nginx-unprivileged).
+# The ImageStream has local lookup, so the Deployment's short image name resolves to the built image.
+apiVersion: image.openshift.io/v1
+kind: ImageStream
+metadata:
+  name: payment-gateway-fe
+  labels:
+    app: payment-gateway-fe
+spec:
+  lookupPolicy:
+    local: true
+---
+apiVersion: build.openshift.io/v1
+kind: BuildConfig
+metadata:
+  name: payment-gateway-fe
+  labels:
+    app: payment-gateway-fe
+spec:
+  runPolicy: Serial
+  successfulBuildsHistoryLimit: 2
+  failedBuildsHistoryLimit: 2
+  source:
+    type: Git
+    git:
+      uri: https://github.com/andrewsselvaraj/payment-gateway-fe.git
+      ref: main
+  strategy:
+    type: Docker
+    dockerStrategy:
+      dockerfilePath: Dockerfile
+  output:
+    to:
+      kind: ImageStreamTag
+      name: payment-gateway-fe:latest
+  resources:
+    requests:
+      cpu: 500m
+      memory: 1Gi
+    limits:
+      cpu: "2"
+      memory: 2Gi
+  triggers: []

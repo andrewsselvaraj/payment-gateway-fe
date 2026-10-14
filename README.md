@@ -53,6 +53,11 @@ oc apply -k k8s/overlays/dev
 oc get route payment-gateway-fe -n payments-dev
 ```
 
+For the Red Hat OpenShift Developer Sandbox, use `k8s/overlays/sandbox` (in-cluster build, current project); the
+full runbook for backend and frontend is
+[docs/SANDBOX-DEPLOY.md](https://github.com/andrewsselvaraj/payment-gateway-microservices/blob/main/docs/SANDBOX-DEPLOY.md)
+in the backend repo.
+
 The manifests add two NetworkPolicies on top of the backend's default-deny: router → frontend, and
 frontend → api-gateway. The pod runs as an arbitrary non-root UID under the restricted SCC.
 
@@ -68,6 +73,6 @@ src/app/pages/       dashboard, checkout, orders, order-detail, notifications
 nginx/               nginx config template (SPA fallback, API proxy, security headers)
 Dockerfile           Node build -> nginx-unprivileged runtime
 Jenkinsfile          CI/CD pipeline
-k8s/base, k8s/overlays/{dev,prod}   Kustomize manifests for OpenShift
+k8s/base, k8s/overlays/{dev,prod,sandbox}   Kustomize manifests for OpenShift
 scripts/smoke-test.sh
 ```
